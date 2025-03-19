@@ -28,10 +28,7 @@ export const fileRouter = {
         await new UTApi().deleteFiles(key);
       }
 
-      const newAvatarUrl = file.url.replace(
-        "/f/",
-        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-      );
+      const newAvatarUrl = file.ufsUrl;
 
       await Promise.all([
         prisma.user.update({
@@ -62,18 +59,25 @@ export const fileRouter = {
       return {};
     })
     .onUploadComplete(async ({ file }) => {
-      const media = await prisma.media.create({
-        data: {
-          url: file.url.replace(
-            "/f/",
-            `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-          ),
-          type: file.type.startsWith("image") ? "IMAGE" : "VIDEO",
-        },
-      });
+      console.log("📤 UploadThing file data:", file);
 
-      return { mediaId: media.id };
-    }),
+      try {
+        const media = await prisma.media.create({
+          data: {
+            url: file.ufsUrl,
+            type: file.type.startsWith("image") ? "IMAGE" : "VIDEO",
+          },
+        });
+
+        console.log("✅ Successfully created media in DB:", media);
+        return { mediaId: media.id };
+
+      } catch (error) {
+        console.error("❌ Error saving to DB:", error);
+        throw new UploadThingError("Failed to save media");
+      }
+    }
+    ),
 } satisfies FileRouter;
 
 export type AppFileRouter = typeof fileRouter;
