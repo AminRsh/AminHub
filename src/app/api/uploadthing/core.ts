@@ -29,9 +29,11 @@ export const fileRouter = {
       }
 
       const newAvatarUrl = file.url.replace(
-        "/f/",
-        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+        "jfut7mm03d.ufs.sh/f/",
+        `utfs.io/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
       );
+
+
 
       await Promise.all([
         prisma.user.update({
@@ -62,12 +64,15 @@ export const fileRouter = {
       return {};
     })
     .onUploadComplete(async ({ file }) => {
+      // Modified URL transformation logic to handle the domain
+      const mediaUrl = file.url.replace(
+        "jfut7mm03d.ufs.sh/f/",
+        `utfs.io/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+      );
+      
       const media = await prisma.media.create({
         data: {
-          url: file.url.replace(
-            "/f/",
-            `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-          ),
+          url: mediaUrl,
           type: file.type.startsWith("image") ? "IMAGE" : "VIDEO",
         },
       });
